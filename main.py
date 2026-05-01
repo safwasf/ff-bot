@@ -268,13 +268,15 @@ async def TcPChaT(ip, port, auth_token, key, iv, ready_event, region, bot_state,
 
                                 join_pkt = await GenJoinSquadsPacket(team_code, key, iv)
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', join_pkt)
-                                await asyncio.sleep(0.5) # Wait for server to confirm join
+                                await asyncio.sleep(0.2) # Adjusted to 0.2s for balanced speed
                                 
                                 emote_pkt = await Emote_k(target_uid, int(emote_id), key, iv, region)
-                                # Send 2 times instantly to prevent double visual glitch but ensure delivery
+                                # Send 4 times instantly for maximum guarantee
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', emote_pkt)
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', emote_pkt)
-                                await asyncio.sleep(1.2) # Wait long enough for game clients to visually render the emote
+                                await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', emote_pkt)
+                                await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', emote_pkt)
+                                await asyncio.sleep(0.2) # Adjusted to 0.2s before leaving
                                 
                                 final_leave = await leave_squad_packet(key, iv, region)
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', final_leave)
