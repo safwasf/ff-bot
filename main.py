@@ -156,8 +156,12 @@ async def GetLoginData(base_url, payload, token, Hr):
         await asyncio.sleep(2)
 
 async def SEndPacKeT(ChaT, OnLinE, TypE, PacKeT):
-    if TypE == 'ChaT' and ChaT: ChaT.write(PacKeT); await ChaT.drain()
-    elif TypE == 'OnLine' and OnLinE: OnLinE.write(PacKeT); await OnLinE.drain()
+    if TypE == 'ChaT':
+        if not ChaT: raise Exception("Chat server disconnected")
+        ChaT.write(PacKeT); await ChaT.drain()
+    elif TypE == 'OnLine':
+        if not OnLinE: raise Exception("Online server disconnected")
+        OnLinE.write(PacKeT); await OnLinE.drain()
 
 async def xAuThSTarTuP(TarGeT, token, timestamp, key, iv):
     uid_hex = hex(TarGeT)[2:]; uid_length = len(uid_hex); encrypted_timestamp = await DecodE_HeX(timestamp)
@@ -260,20 +264,17 @@ async def TcPChaT(ip, port, auth_token, key, iv, ready_event, region, bot_state,
                                 # High-Speed 100% Guarantee: 0.2s Delay + Triple Send
                                 initial_leave = await leave_squad_packet(key, iv, region)
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', initial_leave)
-                                await asyncio.sleep(0.1)
+                                await asyncio.sleep(0.05)
 
                                 join_pkt = await GenJoinSquadsPacket(team_code, key, iv)
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', join_pkt)
-                                await asyncio.sleep(1.0) # Increased delay to ensure join is registered
+                                await asyncio.sleep(0.5) # Wait for server to confirm join
                                 
                                 emote_pkt = await Emote_k(target_uid, int(emote_id), key, iv, region)
-                                # Send 3 times for triple guarantee at 0.2s speed
+                                # Send 2 times instantly to prevent double visual glitch but ensure delivery
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', emote_pkt)
-                                await asyncio.sleep(0.1)
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', emote_pkt)
-                                await asyncio.sleep(0.1)
-                                await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', emote_pkt)
-                                await asyncio.sleep(0.5) # Increased delay before leaving
+                                await asyncio.sleep(1.2) # Wait long enough for game clients to visually render the emote
                                 
                                 final_leave = await leave_squad_packet(key, iv, region)
                                 await SEndPacKeT(bot_state['whisper_writer'], bot_state['online_writer'], 'OnLine', final_leave)
